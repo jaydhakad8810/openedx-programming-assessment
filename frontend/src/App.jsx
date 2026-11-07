@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import CodeEditor from "./components/CodeEditor";
+import ResultPanel from "./components/ResultPanel";
 import "./App.css";
 
 const starterCode = {
@@ -25,20 +26,37 @@ int main() {
 function App() {
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(starterCode.python);
-  const [output, setOutput] = useState("Your output will appear here.");
+
+  const [result, setResult] = useState({
+    status: "idle",
+    message: "Run your code to see the output here."
+  });
 
   const handleLanguageChange = (newLanguage) => {
     setLanguage(newLanguage);
     setCode(starterCode[newLanguage]);
-    setOutput("Language changed. Ready to run.");
+
+    setResult({
+      status: "idle",
+      message: "Language changed. Ready to run."
+    });
   };
 
   const handleRun = () => {
-    setOutput("Execution service is not connected yet.");
+    setResult({
+      status: "success",
+      output: "30",
+      message: "Demo response only. Real code execution is not connected yet."
+    });
   };
 
   const handleSubmit = () => {
-    setOutput("Submission service is not connected yet.");
+    setResult({
+      status: "partial",
+      passedTests: 4,
+      totalTests: 5,
+      message: "Demo submission only. Actual test evaluation is not connected yet."
+    });
   };
 
   return (
@@ -51,7 +69,10 @@ function App() {
       <main className="workspace">
         <section className="question">
           <h3>Question 1: Sum of Two Numbers</h3>
-          <p>Write a program to calculate and print the sum of two numbers.</p>
+          <p>
+            Write a program to calculate and print the sum
+            of two numbers.
+          </p>
         </section>
 
         <section className="editor-section">
@@ -78,13 +99,11 @@ function App() {
           />
         </section>
 
-        <section className="result">
-          <h3>Output / Results</h3>
-          <pre>{output}</pre>
-        </section>
+        <ResultPanel result={result} />
       </main>
     </div>
   );
 }
 
 export default App;
+
