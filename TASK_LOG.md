@@ -57,3 +57,36 @@ Date: 7 November 2026
 - Scoring must follow the manager-approved policy.
 - Learner code must execute in an isolated environment.
 
+
+## 7 November 2026 — Result Panel Development
+
+- [x] Created reusable ResultPanel.jsx component.
+- [x] Connected ResultPanel with App.jsx.
+- [x] Added execution status display.
+- [x] Added program output and error display support.
+- [x] Added passed-test count display.
+- [x] Added marks display support.
+- [x] Tested demonstration submission results in Firefox.
+
+Note: Run and Submit currently use simulated data.
+Actual execution and grading APIs are pending backend integration.
+
+## 13 November 2026 — Exam Editor Restrictions
+
+- [x] Blocked copy, cut and paste events in Monaco Editor.
+- [x] Blocked Ctrl+C, Ctrl+X and Ctrl+V shortcuts.
+- [x] Added alternative shortcut restrictions:
+      Ctrl+Insert, Shift+Insert and Shift+Delete.
+- [x] Disabled Monaco editor context menu.
+- [x] Blocked drag-and-drop text insertion.
+- [x] Connected restriction warnings to React.
+- [x] Added visible warning banner with dismiss option.
+- [x] Tested copy, cut, paste and drag-and-drop in Firefox.
+- [x] Verified alternative keyboard shortcuts.
+
+Pending:
+- [ ] Show a warning when right-click/context-menu is attempted.
+- [ ] Complete broader exam restriction testing.
+
+Note: Browser-side restrictions are deterrents, not a
+guaranteed security boundary.
