@@ -118,3 +118,32 @@ body {
   min-height: 70px;
   white-space: pre-wrap;
 }
+/* Exam restriction warning */
+.restriction-warning {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+  border-radius: 7px;
+  padding: 12px 16px;
+  margin: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.restriction-warning button {
+  background: transparent;
+  border: 1px solid #c2410c;
+  color: #9a3412;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.restriction-warning button:hover {
+  background: #ffedd5;
+}
+

@@ -9,11 +9,13 @@ const starterCode = {
     return a + b
 
 print(add(10, 20))`,
+
   java: `public class Main {
     public static void main(String[] args) {
         System.out.println(10 + 20);
     }
 }`,
+
   cpp: `#include <iostream>
 using namespace std;
 
@@ -26,6 +28,8 @@ int main() {
 function App() {
   const [language, setLanguage] = useState("python");
   const [code, setCode] = useState(starterCode.python);
+
+  const [restrictionNotice, setRestrictionNotice] = useState("");
 
   const [result, setResult] = useState({
     status: "idle",
@@ -40,6 +44,21 @@ function App() {
       status: "idle",
       message: "Language changed. Ready to run."
     });
+  };
+
+  const handleBlockedAction = (action) => {
+    const actionNames = {
+      copy: "Copying",
+      cut: "Cutting",
+      paste: "Pasting",
+      drop: "Drag-and-drop text insertion"
+    };
+
+    const actionName = actionNames[action] || "This action";
+
+    setRestrictionNotice(
+      `${actionName} is disabled during this examination.`
+    );
   };
 
   const handleRun = () => {
@@ -76,6 +95,25 @@ function App() {
         </section>
 
         <section className="editor-section">
+
+          {restrictionNotice && (
+            <div
+              className="restriction-warning"
+              role="alert"
+              aria-live="assertive"
+            >
+              <span>⚠️ {restrictionNotice}</span>
+
+              <button
+                type="button"
+                onClick={() => setRestrictionNotice("")}
+                aria-label="Dismiss warning"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           <div className="toolbar">
             <select
               value={language}
@@ -96,6 +134,7 @@ function App() {
             language={language}
             code={code}
             onChange={setCode}
+            onBlockedAction={handleBlockedAction}
           />
         </section>
 
@@ -106,4 +145,3 @@ function App() {
 }
 
 export default App;
-

@@ -70,3 +70,23 @@ Date: 7 November 2026
 
 Note: Run and Submit currently use simulated data.
 Actual execution and grading APIs are pending backend integration.
+
+## 13 November 2026 — Exam Editor Restrictions
+
+- [x] Blocked copy, cut and paste events in Monaco Editor.
+- [x] Blocked Ctrl+C, Ctrl+X and Ctrl+V shortcuts.
+- [x] Added alternative shortcut restrictions:
+      Ctrl+Insert, Shift+Insert and Shift+Delete.
+- [x] Disabled Monaco editor context menu.
+- [x] Blocked drag-and-drop text insertion.
+- [x] Connected restriction warnings to React.
+- [x] Added visible warning banner with dismiss option.
+- [x] Tested copy, cut, paste and drag-and-drop in Firefox.
+- [x] Verified alternative keyboard shortcuts.
+
+Pending:
+- [ ] Show a warning when right-click/context-menu is attempted.
+- [ ] Complete broader exam restriction testing.
+
+Note: Browser-side restrictions are deterrents, not a
+guaranteed security boundary.
