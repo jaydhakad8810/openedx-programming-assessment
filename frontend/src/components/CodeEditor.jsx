@@ -18,7 +18,14 @@ function CodeEditor({ language, code, onChange, onBlockedAction }) {
       onBlockedAction?.(event.type);
     };
 
-    const blockedEvents = ["copy", "cut", "paste", "drop"];
+    const blockedEvents = [
+  "copy",
+  "cut",
+  "paste",
+  "drop",
+  "contextmenu"
+];
+
 
     blockedEvents.forEach((eventName) => {
       editorNode?.addEventListener(

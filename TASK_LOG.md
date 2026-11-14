@@ -90,3 +90,46 @@ Pending:
 
 Note: Browser-side restrictions are deterrents, not a
 guaranteed security boundary.
+
+## 14 November 2026 — Frontend Phase 1, 2 and 3
+
+### Phase 1 — Exam Restrictions
+- [x] Added copy, cut and paste restrictions.
+- [x] Blocked keyboard shortcuts and alternative shortcuts.
+- [x] Disabled Monaco context menu.
+- [x] Blocked drag-and-drop text insertion.
+- [x] Added warning messages for restricted actions.
+- [x] Tested restrictions in Firefox.
+
+### Phase 2 — Frontend Improvements
+- [x] Added responsive layouts for laptop, tablet and mobile.
+- [x] Tested all three screen sizes successfully.
+- [x] Added Run and Submit loading indicators.
+- [x] Prevented repeated clicks during processing.
+- [x] Improved result panel styling.
+- [x] Verified production build using npm run build.
+
+### Phase 3 — Instructor Authoring Interface
+- [x] Created InstructorAuthoring.jsx.
+- [x] Added question title and description fields.
+- [x] Added Python, Java and C++ selection.
+- [x] Added language-specific starter code configuration.
+- [x] Added visible test case configuration.
+- [x] Added hidden test case configuration.
+- [x] Added time limit and maximum marks.
+- [x] Added form validation.
+- [x] Added Save Question Configuration button.
+- [x] Added saved configuration preview.
+- [x] Added Learner View and Instructor View navigation.
+- [x] Added responsive instructor form styling.
+
+### Pending
+- [ ] Complete final instructor form validation tests.
+- [ ] Test configuration preview with sample questions.
+- [ ] Complete final frontend regression testing.
+- [ ] Coordinate API contracts with Member 2 and Member 3.
+- [ ] Integrate frontend with the XBlock and execution service later.
+
+Note: Configuration saving currently uses frontend state only.
+Permanent storage and secure hidden-test handling require backend integration.
+Run and Submit still use simulated execution responses.
