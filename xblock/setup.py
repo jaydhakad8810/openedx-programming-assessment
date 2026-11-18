@@ -5,6 +5,12 @@ setup(
     version="0.1.0",
     description="Programming Assessment XBlock for Open edX",
     packages=find_packages(),
+    package_data={
+        "programming_assessment": [
+            "public/*",
+            "public/assets/*",
+        ],
+    },
     include_package_data=True,
     install_requires=[
         "XBlock>=5.1.0",

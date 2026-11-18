@@ -9,7 +9,7 @@ from xblock.exceptions import JsonHandlerError
 
 
 class ProgrammingAssessmentXBlock(XBlock):
-
+    resources_dir = "public"
     display_name = String(
         display_name="Display Name",
         default="Programming Assessment",
@@ -67,22 +67,86 @@ class ProgrammingAssessmentXBlock(XBlock):
         default=10,
         scope=Scope.content,
     )
-
     def student_view(self, context=None):
-        languages = ", ".join(self.selected_languages or [])
+        config = {
+            "questionId": str(self.location),
+            "questionTitle": self.question_title,
+            "questionText": self.question_text,
+            "selectedLanguages": self.selected_languages or ["python"],
+            "starterCode": self.starter_code or {},
+            "maxScore": self.max_score,
+            "timeLimit": self.time_limit,
+        }
+
+        config_json = json.dumps(config)
+        config_json = config_json.replace("<", "\\u003c")
 
         html = f"""
         <div class="programming-assessment">
-            <h2>{escape(self.question_title)}</h2>
-            <p>{escape(self.question_text)}</p>
-            <p><strong>Maximum Marks:</strong> {self.max_score}</p>
-            <p><strong>Time Limit:</strong> {self.time_limit} seconds</p>
-            <p><strong>Languages:</strong> {escape(languages)}</p>
-            <p>Coding editor integration is pending.</p>
+            <div class="pa-react-mount"
+                 data-config="{escape(config_json, quote=True)}">
+            </div>
         </div>
         """
 
-        return Fragment(html)
+        fragment = Fragment(html)
+
+        # Load CSS from the XBlock public directory
+        css_url = self.runtime.local_resource_url(
+            self, "assets/index.css"
+        )
+
+        # Load JavaScript from the XBlock public directory
+        js_url = self.runtime.local_resource_url(
+            self, "assets/index.js"
+        )
+
+        fragment.add_css_url(css_url)
+
+        js = f"""
+        function ProgrammingAssessmentXBlock(runtime, element) {{
+            var mountElement = element.querySelector(".pa-react-mount");
+
+            if (!mountElement) {{
+                return;
+            }}
+
+            var config;
+
+            try {{
+                config = JSON.parse(
+                    mountElement.getAttribute("data-config") || "{{}}"
+                );
+            }} catch (error) {{
+                mountElement.textContent = "Unable to load assessment configuration.";
+                return;
+            }}
+
+            import("{js_url}")
+    .then(function (module) {{
+        console.log("XBlock imported module:", module);
+        console.log("XBlock module exports:", Object.keys(module));
+        console.log("XBlock mount type:", typeof module.mount);
+
+        // Pass XBlock handler URLs to the React application.
+        config.runUrl = runtime.handlerUrl(element, "run_code");
+        config.submitUrl = runtime.handlerUrl(element, "submit_code");
+
+        module.mount(mountElement, config);
+    }})
+                .catch(function (error) {{
+                    console.error("Programming Assessment loading failed:", error);
+                    mountElement.textContent = "Unable to load the coding assessment.";
+                }});
+        }}
+        """
+
+        fragment.add_javascript(js)
+        fragment.initialize_js("ProgrammingAssessmentXBlock")
+
+        return fragment
+    def author_view(self, context=None):
+        return self.student_view(context)
 
     def studio_view(self, context=None):
         starter_code = json.dumps(self.starter_code, indent=2)
@@ -295,3 +359,55 @@ class ProgrammingAssessmentXBlock(XBlock):
         self.max_score = max_score
 
         return {"result": "success"}
+
+    @XBlock.json_handler
+    def run_code(self, data, suffix=""):
+        """Handle a student's Run request."""
+
+        from . import execution_client
+
+        if not isinstance(data, dict):
+            raise JsonHandlerError(400, "Invalid execution request.")
+
+        language = data.get("language")
+        code = data.get("code")
+        user_input = data.get("input", "")
+
+        if language not in self.selected_languages:
+            raise JsonHandlerError(400, "Selected language is not allowed.")
+
+        if not isinstance(code, str) or not code.strip():
+            raise JsonHandlerError(400, "Source code is required.")
+
+        if not isinstance(user_input, str):
+            raise JsonHandlerError(400, "Input must be a string.")
+
+        return execution_client.run_code(language, code, user_input)
+
+    @XBlock.json_handler
+    def submit_code(self, data, suffix=""):
+        """Handle a student's Submit request."""
+
+        from . import execution_client
+
+        if not isinstance(data, dict):
+            raise JsonHandlerError(400, "Invalid submission request.")
+
+        question_id = data.get("question_id")
+        language = data.get("language")
+        code = data.get("code")
+
+        if not isinstance(question_id, str) or not question_id.strip():
+            raise JsonHandlerError(400, "Question ID is required.")
+
+        if language not in self.selected_languages:
+            raise JsonHandlerError(400, "Selected language is not allowed.")
+
+        if not isinstance(code, str) or not code.strip():
+            raise JsonHandlerError(400, "Source code is required.")
+
+        return execution_client.submit_code(
+            question_id,
+            language,
+            code,
+        )
