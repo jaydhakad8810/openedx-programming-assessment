@@ -1,10 +1,22 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './index.css'
+
 import App from './App.jsx'
 
-createRoot(document.getElementById('root')).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-)
+export function mount(element, config = {}) {
+  if (!element) {
+    throw new Error('Programming Assessment mount element not found')
+  }
+
+  const root = createRoot(element)
+
+  root.render(
+    <StrictMode>
+      <div className="programming-assessment-root">
+        <App config={config} />
+      </div>
+    </StrictMode>
+  )
+
+  return () => root.unmount()
+}
