@@ -10,6 +10,7 @@ from xblock.exceptions import JsonHandlerError
 
 class ProgrammingAssessmentXBlock(XBlock):
     resources_dir = "public"
+
     display_name = String(
         display_name="Display Name",
         default="Programming Assessment",
@@ -58,7 +59,7 @@ class ProgrammingAssessmentXBlock(XBlock):
 
     time_limit = Integer(
         display_name="Time Limit (Seconds)",
-        default=120,
+        default=2,
         scope=Scope.content,
     )
 
@@ -67,6 +68,7 @@ class ProgrammingAssessmentXBlock(XBlock):
         default=10,
         scope=Scope.content,
     )
+
     def student_view(self, context=None):
         config = {
             "questionId": str(self.location),
@@ -91,12 +93,10 @@ class ProgrammingAssessmentXBlock(XBlock):
 
         fragment = Fragment(html)
 
-        # Load CSS from the XBlock public directory
         css_url = self.runtime.local_resource_url(
             self, "assets/index.css"
         )
 
-        # Load JavaScript from the XBlock public directory
         js_url = self.runtime.local_resource_url(
             self, "assets/index.js"
         )
@@ -118,25 +118,28 @@ class ProgrammingAssessmentXBlock(XBlock):
                     mountElement.getAttribute("data-config") || "{{}}"
                 );
             }} catch (error) {{
-                mountElement.textContent = "Unable to load assessment configuration.";
+                mountElement.textContent =
+                    "Unable to load assessment configuration.";
                 return;
             }}
 
             import("{js_url}")
-    .then(function (module) {{
-        console.log("XBlock imported module:", module);
-        console.log("XBlock module exports:", Object.keys(module));
-        console.log("XBlock mount type:", typeof module.mount);
+                .then(function (module) {{
+                    config.runUrl = runtime.handlerUrl(
+                        element, "run_code"
+                    );
+                    config.submitUrl = runtime.handlerUrl(
+                        element, "submit_code"
+                    );
 
-        // Pass XBlock handler URLs to the React application.
-        config.runUrl = runtime.handlerUrl(element, "run_code");
-        config.submitUrl = runtime.handlerUrl(element, "submit_code");
-
-        module.mount(mountElement, config);
-    }})
+                    module.mount(mountElement, config);
+                }})
                 .catch(function (error) {{
-                    console.error("Programming Assessment loading failed:", error);
-                    mountElement.textContent = "Unable to load the coding assessment.";
+                    console.error(
+                        "Programming Assessment loading failed:", error
+                    );
+                    mountElement.textContent =
+                        "Unable to load the coding assessment.";
                 }});
         }}
         """
@@ -145,6 +148,7 @@ class ProgrammingAssessmentXBlock(XBlock):
         fragment.initialize_js("ProgrammingAssessmentXBlock")
 
         return fragment
+
     def author_view(self, context=None):
         return self.student_view(context)
 
@@ -192,9 +196,10 @@ class ProgrammingAssessmentXBlock(XBlock):
             </div>
 
             <div>
-                <label>Time Limit (Seconds)</label>
+                <label>Time Limit (Seconds, maximum 10)</label>
                 <input type="number" class="pa-time-limit"
-                    value="{self.time_limit}" min="1">
+                    value="{min(max(self.time_limit, 1), 10)}"
+                    min="1" max="10">
             </div>
 
             <div>
@@ -203,7 +208,9 @@ class ProgrammingAssessmentXBlock(XBlock):
                     value="{self.max_score}" min="1">
             </div>
 
-            <button type="button" class="pa-save">Save Configuration</button>
+            <button type="button" class="pa-save">
+                Save Configuration
+            </button>
             <p class="pa-message" role="status"></p>
         </div>
         """
@@ -221,13 +228,25 @@ class ProgrammingAssessmentXBlock(XBlock):
                         question_text: $element.find('.pa-description').val(),
                         selected_languages: $element.find('.pa-languages').val()
                             .split(',')
-                            .map(function (item) { return item.trim().toLowerCase(); })
+                            .map(function (item) {
+                                return item.trim().toLowerCase();
+                            })
                             .filter(Boolean),
-                        starter_code: JSON.parse($element.find('.pa-starter-code').val()),
-                        visible_tests: JSON.parse($element.find('.pa-visible-tests').val()),
-                        hidden_tests: JSON.parse($element.find('.pa-hidden-tests').val()),
-                        time_limit: Number($element.find('.pa-time-limit').val()),
-                        max_score: Number($element.find('.pa-max-score').val())
+                        starter_code: JSON.parse(
+                            $element.find('.pa-starter-code').val()
+                        ),
+                        visible_tests: JSON.parse(
+                            $element.find('.pa-visible-tests').val()
+                        ),
+                        hidden_tests: JSON.parse(
+                            $element.find('.pa-hidden-tests').val()
+                        ),
+                        time_limit: Number(
+                            $element.find('.pa-time-limit').val()
+                        ),
+                        max_score: Number(
+                            $element.find('.pa-max-score').val()
+                        )
                     };
                 } catch (error) {
                     $element.find('.pa-message').text(
@@ -245,16 +264,20 @@ class ProgrammingAssessmentXBlock(XBlock):
                     url: url,
                     data: JSON.stringify(data),
                     contentType: 'application/json',
+
                     success: function () {
                         $element.find('.pa-message').text(
                             'Configuration saved successfully.'
                         );
                     },
+
                     error: function (xhr) {
                         var message = 'Unable to save configuration.';
+
                         if (xhr.responseText) {
                             message += ' ' + xhr.responseText;
                         }
+
                         $element.find('.pa-message').text(message);
                     }
                 });
@@ -305,7 +328,10 @@ class ProgrammingAssessmentXBlock(XBlock):
         if (
             not isinstance(languages, list)
             or not languages
-            or any(language not in ("python", "java", "cpp") for language in languages)
+            or any(
+                language not in ("python", "java", "cpp")
+                for language in languages
+            )
             or len(set(languages)) != len(languages)
         ):
             raise JsonHandlerError(400, "Select valid programming languages.")
@@ -318,9 +344,14 @@ class ProgrammingAssessmentXBlock(XBlock):
             or not isinstance(starter_code[language], str)
             for language in languages
         ):
-            raise JsonHandlerError(400, "Provide starter code for every selected language.")
+            raise JsonHandlerError(
+                400, "Provide starter code for every selected language."
+            )
 
-        if not isinstance(visible_tests, list) or not isinstance(hidden_tests, list):
+        if (
+            not isinstance(visible_tests, list)
+            or not isinstance(hidden_tests, list)
+        ):
             raise JsonHandlerError(400, "Test cases must be JSON arrays.")
 
         for test in visible_tests + hidden_tests:
@@ -337,18 +368,21 @@ class ProgrammingAssessmentXBlock(XBlock):
         if (
             isinstance(time_limit, bool)
             or not isinstance(time_limit, int)
-            or time_limit < 1
+            or not 1 <= time_limit <= 10
         ):
-            raise JsonHandlerError(400, "Time limit must be a positive integer.")
+            raise JsonHandlerError(
+                400, "Time limit must be between 1 and 10 seconds."
+            )
 
         if (
             isinstance(max_score, bool)
             or not isinstance(max_score, int)
             or max_score < 1
         ):
-            raise JsonHandlerError(400, "Maximum marks must be a positive integer.")
+            raise JsonHandlerError(
+                400, "Maximum marks must be a positive integer."
+            )
 
-        # Save validated configuration to XBlock content fields.
         self.question_title = title.strip()
         self.question_text = description
         self.selected_languages = languages
@@ -362,7 +396,7 @@ class ProgrammingAssessmentXBlock(XBlock):
 
     @XBlock.json_handler
     def run_code(self, data, suffix=""):
-        """Handle a student's Run request."""
+        """Run student code against visible test cases."""
 
         from . import execution_client
 
@@ -382,11 +416,22 @@ class ProgrammingAssessmentXBlock(XBlock):
         if not isinstance(user_input, str):
             raise JsonHandlerError(400, "Input must be a string.")
 
-        return execution_client.run_code(language, code, user_input)
+        if not self.visible_tests:
+            raise JsonHandlerError(
+                400, "No visible test cases are configured."
+            )
+
+        return execution_client.run_code(
+            language,
+            code,
+            user_input,
+            visible_tests=self.visible_tests,
+            time_limit=self.time_limit,
+        )
 
     @XBlock.json_handler
     def submit_code(self, data, suffix=""):
-        """Handle a student's Submit request."""
+        """Submit student code against visible and hidden tests."""
 
         from . import execution_client
 
@@ -400,14 +445,26 @@ class ProgrammingAssessmentXBlock(XBlock):
         if not isinstance(question_id, str) or not question_id.strip():
             raise JsonHandlerError(400, "Question ID is required.")
 
+        if question_id != str(self.location):
+            raise JsonHandlerError(400, "Invalid question ID.")
+
         if language not in self.selected_languages:
             raise JsonHandlerError(400, "Selected language is not allowed.")
 
         if not isinstance(code, str) or not code.strip():
             raise JsonHandlerError(400, "Source code is required.")
 
+        if not self.visible_tests:
+            raise JsonHandlerError(
+                400, "No visible test cases are configured."
+            )
+
         return execution_client.submit_code(
             question_id,
             language,
             code,
+            visible_tests=self.visible_tests,
+            hidden_tests=self.hidden_tests,
+            time_limit=self.time_limit,
+            max_score=self.max_score,
         )

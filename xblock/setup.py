@@ -14,6 +14,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "XBlock>=5.1.0",
+        "requests>=2.31.0",
     ],
     entry_points={
         "xblock.v1": [
